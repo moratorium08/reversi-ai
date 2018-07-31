@@ -1,8 +1,17 @@
+
+use std::num::Wrapping;
+
+use util::{clz};
+use player::Player;
+
+
+#[derive(PartialEq, Eq)]
 pub struct Pos {
     x: u8,
     y: u8,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Board {
     white: u64,
     black: u64,
@@ -22,14 +31,14 @@ impl Pos {
             else if c1 > 56 || c1 < 49 {
                 Err("位置の範囲外".to_string())
             } else {
-                Ok(Pos{x: c0 - 65, y: c1 - 49})
+                Ok(Pos{y: c0 - 65, x: c1 - 49})
             }
         }
     }
 
     pub fn to_string(self) -> String {
-        let c0 = (self.x + 65) as char;
-        let c1 = (self.y + 49) as char;
+        let c0 = (self.y + 65) as char;
+        let c1 = (self.x + 49) as char;
         let mut s = String::new();
         s.push(c0);
         s.push(c1);
@@ -37,7 +46,7 @@ impl Pos {
     }
 }
 
-trait BitIndexable {
+pub trait BitIndexable {
     fn to_index(&self) -> u8;
 }
 
@@ -71,21 +80,97 @@ impl Board {
         }
         ret
     }
+    pub fn print(&self) {
+        println!("  A B C D E F G H");
+        println!("  ---------------");
+        for i in 0..64 {
+            if i % 8 == 0 {
+                if i > 0 {
+                    print!("\n");
+                }
+                print!("{} ", i / 8 + 1);
+            }
+
+            if ((1 << i) & self.black) != 0 {
+                print!("o ");
+            } else if ((1 << i) & self.white) != 0{
+                print!("x ");
+            } else {
+                print!("  ");
+            }
+        }
+        print!("\n");
+    }
 
     // ref: http://primenumber.hatenadiary.jp/entry/2016/12/26/063226
-    /* fn flip(&self, p: &BitIndexable) -> Board {
+    pub fn flip(&self, p: &BitIndexable, player: Player) -> Board {
+        let (pl, op) =
+            if player.is_white() {
+                (self.black, self.white)
+            }
+            else {
+                (self.white, self.black)
+            };
+
         let pos = p.to_index();
-        let x = self.white;
-        let yzw = self.white & 0x7e7e7e7e7e7e7e7e;
+        let x = op;
+        let yzw = &(op & 0x7e7e7e7e7e7e7e7e);
 
         let maskx = 0x0080808080808080u64 >> (63 - pos);
         let masky = 0x7f00000000000000u64 >> (63 - pos);
         let maskz = 0x0102040810204000u64 >> (63 - pos);
-        let maskz = 0x0040201008040201u64>> (63 - pos);
-        let outflank = (0x8000000000000000u64 >> clz(~OM & mask)) & P;
+        let maskw = 0x0040201008040201u64 >> (63 - pos);
 
-        *self
-    }*/
+        let outflankx = (0x8000000000000000u64 >> clz(!x & maskx)) & pl;
+        let outflanky = (0x8000000000000000u64 >> clz(!*yzw& masky)) & pl;
+        let outflankz = (0x8000000000000000u64 >> clz(!*yzw& maskz)) & pl;
+        let outflankw = (0x8000000000000000u64 >> clz(!*yzw& maskw)) & pl;
+
+        let flippedx = (( -(outflankx as i64) * 2) as u64) & maskx;
+        let flippedy = (( -(outflanky as i64) * 2) as u64) & masky;
+        let flippedz = (( -(outflankz as i64) * 2) as u64) & maskz;
+        let flippedw = (( -(outflankw as i64) * 2) as u64) & maskw;
+
+        let mask2x = 0x0101010101010100u64 << pos;
+        let mask2y = 0x00000000000000feu64 << pos;
+        let mask2z = 0x0002040810204080u64 << pos;
+        let mask2w = 0x8040201008040200u64 << pos;
+
+        // releaseビルドの時は使うようにする
+        /*let outflank2x = mask2x & ((x | !mask2x) + 1) & pl;
+        let outflank2y = mask2y & ((*yzw | !mask2y) + 1) & pl;
+        let outflank2z = mask2z & ((*yzw | !mask2z) + 1) & pl;
+        let outflank2w = mask2w & ((*yzw | !mask2w) + 1) & pl;*/
+        let outflank2x = mask2x & (Wrapping((x | !mask2x)) + Wrapping(1)).0 & pl;
+        let outflank2y = mask2y & (Wrapping(*yzw | !mask2y) + Wrapping(1)).0 & pl;
+        let outflank2z = mask2z & (Wrapping(*yzw | !mask2z) + Wrapping(1)).0 & pl;
+        let outflank2w = mask2w & (Wrapping(*yzw | !mask2w) + Wrapping(1)).0 & pl;
+
+
+        let flipped2x = flippedx |
+            (Wrapping(outflank2x) + Wrapping((if outflank2x == 0 {0} else {-1i64 as u64}))).0
+                & mask2x;
+        let flipped2y = flippedy |
+            (Wrapping(outflank2y) + Wrapping((if outflank2y == 0 {0} else {-1i64 as u64}))).0
+                & mask2y;
+        let flipped2z = flippedz |
+            (Wrapping(outflank2z) + Wrapping((if outflank2z == 0 {0} else {-1i64 as u64}))).0
+                & mask2z;
+        let flipped2w = flippedw |
+            (Wrapping(outflank2w) + Wrapping((if outflank2w == 0 {0} else {-1i64 as u64}))).0
+                & mask2w;
+
+        let flipped = flipped2x | flipped2y | flipped2z | flipped2w;
+
+        let next_pl = pl | (1u64 << pos) | flipped;
+        let next_op = op & (!flipped);
+
+        if player.is_white() {
+            Board{white: next_op, black: next_pl}
+        } else {
+            Board{white: next_pl, black: next_op}
+        }
+    }
 
     /*fn is_valid(&self, p: &BitIndexable) -> bool {
         let index = p.to_index();

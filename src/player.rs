@@ -1,6 +1,6 @@
 use std::cmp::PartialEq;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, Eq, Hash)]
 pub struct Player(bool);
 
 impl Player {
@@ -14,6 +14,16 @@ impl Player {
 
     pub fn black() -> Player{
         Player(false)
+    }
+
+    pub fn is_white(self) -> bool {
+        let Player(b) = self;
+        b
+    }
+
+    pub fn is_black(self) -> bool {
+        let Player(b) = self;
+        !b
     }
 }
 
