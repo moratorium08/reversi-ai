@@ -80,7 +80,7 @@ impl fmt::Display for Hash {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let Hash(data) = *self;
         for (i, x) in data.iter().enumerate() {
-            match if i == 7 {write!(f, "{:02x} ", x)} else {write!(f, "{:02x}", x)} {
+            match if i == 7 { write!(f, "{:02x} ", x) } else { write!(f, "{:02x}", x) } {
                 Ok(_) => (),
                 x => return x
             }
@@ -166,7 +166,6 @@ impl Board {
         print!("\n");
     }
 
-    // ref: http://primenumber.hatenadiary.jp/entry/2016/12/26/063226
     pub fn flip(&self, p: &BitIndexable, player: Player) -> Board {
         let (pl, op) =
             if player.is_white() {
@@ -174,8 +173,23 @@ impl Board {
             } else {
                 (self.white, self.black)
             };
-
         let pos = p.to_index();
+
+        let flipped = self.gen_flip(pos, pl, op);
+        println!("{}", flipped);
+
+        let next_pl = pl | (1u64 << pos) | flipped;
+        let next_op = op & (!flipped);
+
+        if player.is_white() {
+            Board { white: next_op, black: next_pl }
+        } else {
+            Board { white: next_pl, black: next_op }
+        }
+    }
+
+    // ref: http://primenumber.hatenadiary.jp/entry/2016/12/26/063226
+    fn gen_flip(&self, pos: u8, pl: u64, op: u64) -> u64 {
         let x = op;
         let yzw = &(op & 0x7e7e7e7e7e7e7e7e);
 
@@ -223,28 +237,18 @@ impl Board {
             (Wrapping(outflank2w) + Wrapping((if outflank2w == 0 { 0 } else { -1i64 as u64 }))).0
                 & mask2w;
 
-        let flipped = flipped2x | flipped2y | flipped2z | flipped2w;
-
-        let next_pl = pl | (1u64 << pos) | flipped;
-        let next_op = op & (!flipped);
-
-        if player.is_white() {
-            Board { white: next_op, black: next_pl }
-        } else {
-            Board { white: next_pl, black: next_op }
-        }
+        flipped2x | flipped2y | flipped2z | flipped2w
     }
 
-    /*fn is_valid(&self, p: &BitIndexable) -> bool {
-        let index = p.to_index();
-        if ((1 << index) & self.white) != 0 ||
-            ((1 << index) & self.black) != 0 {
-            false
-        } else {
-        }
+    fn is_valid(&self, pos: &BitIndexable, player: Player) -> bool {
+        let (pl, op) =
+            if player.is_white() {
+                (self.black, self.white)
+            } else {
+                (self.white, self.black)
+            };
+        let pos = p.to_index();
+
+        self.gen_flip(pos, pl, op) != 0
     }
-
-    pub fn put_pos(&self, p: &BitIndexable) -> Board {
-
-    }*/
 }

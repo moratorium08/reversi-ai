@@ -1,7 +1,7 @@
 extern crate client;
 
 use client::board::{Board, Hash, Pos};
-use client::player::{Player};
+use client::player::Player;
 
 #[test]
 fn board_impl_test() {
@@ -20,7 +20,6 @@ fn board_impl_test() {
 
 #[test]
 fn board_flip_test() {
-
     let table = [
         ("D3", 0x0000001000000000, 0x0000000818080000),
         ("C3", 0x0000001008040000, 0x0000000810080000),
@@ -54,7 +53,7 @@ fn pos_impl_test() {
     match Pos::from_str("A1".to_string()) {
         Ok(x) => {
             assert_eq!("A1".to_string(), x.to_string());
-        },
+        }
         Err(_) => {
             panic!("Failed to pos(A1)");
         }
@@ -63,7 +62,7 @@ fn pos_impl_test() {
     match Pos::from_str("Z9".to_string()) {
         Ok(_) => {
             panic!("Should fail pos(Z9)");
-        },
+        }
         Err(_) => {
             // nop
             ;

@@ -1,5 +1,3 @@
-
-
 // bit utils
 pub fn clz(x: u64) -> u8 {
     let mut mask = 1u64 << 63;
