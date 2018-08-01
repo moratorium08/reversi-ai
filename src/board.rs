@@ -1,8 +1,9 @@
-
+use std::fmt;
 use std::num::Wrapping;
 
-use util::{clz};
+
 use player::Player;
+use util::clz;
 
 
 #[derive(PartialEq, Eq)]
@@ -11,7 +12,7 @@ pub struct Pos {
     y: u8,
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Board {
     white: u64,
     black: u64,
@@ -27,11 +28,10 @@ impl Pos {
             let c1 = cs[1] as u8;
             if c0 > 72 || c0 < 65 {
                 Err("位置の範囲外".to_string())
-            }
-            else if c1 > 56 || c1 < 49 {
+            } else if c1 > 56 || c1 < 49 {
                 Err("位置の範囲外".to_string())
             } else {
-                Ok(Pos{y: c0 - 65, x: c1 - 49})
+                Ok(Pos { y: c0 - 65, x: c1 - 49 })
             }
         }
     }
@@ -56,12 +56,75 @@ impl BitIndexable for Pos {
     }
 }
 
+#[derive(PartialEq, Eq, Debug)]
+pub struct Hash([u8; 16]);
+
+impl Hash {
+    pub fn from_values(white: u64, black: u64) -> Hash {
+        let mut white = white;
+        let mut black = black;
+        let mut ret = [0u8; 16];
+        for i in 0..8 {
+            ret[7 - i] = (white & 0xffu64) as u8;
+            white >>= 8;
+        }
+        for i in 0..8 {
+            ret[15 - i] = (black & 0xffu64) as u8;
+            black >>= 8;
+        }
+        Hash(ret)
+    }
+}
+
+impl fmt::Display for Hash {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let Hash(data) = *self;
+        for (i, x) in data.iter().enumerate() {
+            match if i == 7 {write!(f, "{:02x} ", x)} else {write!(f, "{:02x}", x)} {
+                Ok(_) => (),
+                x => return x
+            }
+        }
+        write!(f, "\n")
+    }
+}
+
 impl Board {
     pub fn new() -> Board {
-        Board{
+        Board {
             white: (1 << 27) + (1 << 36),
             black: (1 << 28) + (1 << 35),
         }
+    }
+
+    pub fn hash(&self) -> Hash {
+        let mut tmp_white = self.white;
+        let mut tmp_black = self.black;
+        let mut ret = [0u8; 16];
+        for i in 0..8 {
+            ret[7 - i] = (tmp_white & 0xffu64) as u8;
+            tmp_white >>= 8;
+        }
+        for i in 0..8 {
+            ret[15 - i] = (tmp_black & 0xffu64) as u8;
+            tmp_black >>= 8;
+        }
+        Hash(ret)
+    }
+
+    pub fn from_hash(hash: Hash) -> Board {
+        let Hash(hash) = hash;
+        let mut white = 0u64;
+        for i in 0..8 {
+            white <<= 8;
+            white += hash[i] as u64;
+        }
+        let mut black = 0u64;
+        for i in 0..8 {
+            black <<= 8;
+            black += hash[8 + i] as u64;
+        }
+        Board { white, black }
     }
 
     pub fn to_string(&self) -> String {
@@ -72,7 +135,7 @@ impl Board {
             }
             if ((1 << i) & self.black) != 0 {
                 ret.push_str("o");
-            } else if ((1 << i) & self.white) != 0{
+            } else if ((1 << i) & self.white) != 0 {
                 ret.push_str("x");
             } else {
                 ret.push_str(" ");
@@ -80,6 +143,7 @@ impl Board {
         }
         ret
     }
+
     pub fn print(&self) {
         println!("  A B C D E F G H");
         println!("  ---------------");
@@ -93,7 +157,7 @@ impl Board {
 
             if ((1 << i) & self.black) != 0 {
                 print!("o ");
-            } else if ((1 << i) & self.white) != 0{
+            } else if ((1 << i) & self.white) != 0 {
                 print!("x ");
             } else {
                 print!("  ");
@@ -107,8 +171,7 @@ impl Board {
         let (pl, op) =
             if player.is_white() {
                 (self.black, self.white)
-            }
-            else {
+            } else {
                 (self.white, self.black)
             };
 
@@ -122,14 +185,14 @@ impl Board {
         let maskw = 0x0040201008040201u64 >> (63 - pos);
 
         let outflankx = (0x8000000000000000u64 >> clz(!x & maskx)) & pl;
-        let outflanky = (0x8000000000000000u64 >> clz(!*yzw& masky)) & pl;
-        let outflankz = (0x8000000000000000u64 >> clz(!*yzw& maskz)) & pl;
-        let outflankw = (0x8000000000000000u64 >> clz(!*yzw& maskw)) & pl;
+        let outflanky = (0x8000000000000000u64 >> clz(!*yzw & masky)) & pl;
+        let outflankz = (0x8000000000000000u64 >> clz(!*yzw & maskz)) & pl;
+        let outflankw = (0x8000000000000000u64 >> clz(!*yzw & maskw)) & pl;
 
-        let flippedx = (( -(outflankx as i64) * 2) as u64) & maskx;
-        let flippedy = (( -(outflanky as i64) * 2) as u64) & masky;
-        let flippedz = (( -(outflankz as i64) * 2) as u64) & maskz;
-        let flippedw = (( -(outflankw as i64) * 2) as u64) & maskw;
+        let flippedx = ((-(outflankx as i64) * 2) as u64) & maskx;
+        let flippedy = ((-(outflanky as i64) * 2) as u64) & masky;
+        let flippedz = ((-(outflankz as i64) * 2) as u64) & maskz;
+        let flippedw = ((-(outflankw as i64) * 2) as u64) & maskw;
 
         let mask2x = 0x0101010101010100u64 << pos;
         let mask2y = 0x00000000000000feu64 << pos;
@@ -148,16 +211,16 @@ impl Board {
 
 
         let flipped2x = flippedx |
-            (Wrapping(outflank2x) + Wrapping((if outflank2x == 0 {0} else {-1i64 as u64}))).0
+            (Wrapping(outflank2x) + Wrapping((if outflank2x == 0 { 0 } else { -1i64 as u64 }))).0
                 & mask2x;
         let flipped2y = flippedy |
-            (Wrapping(outflank2y) + Wrapping((if outflank2y == 0 {0} else {-1i64 as u64}))).0
+            (Wrapping(outflank2y) + Wrapping((if outflank2y == 0 { 0 } else { -1i64 as u64 }))).0
                 & mask2y;
         let flipped2z = flippedz |
-            (Wrapping(outflank2z) + Wrapping((if outflank2z == 0 {0} else {-1i64 as u64}))).0
+            (Wrapping(outflank2z) + Wrapping((if outflank2z == 0 { 0 } else { -1i64 as u64 }))).0
                 & mask2z;
         let flipped2w = flippedw |
-            (Wrapping(outflank2w) + Wrapping((if outflank2w == 0 {0} else {-1i64 as u64}))).0
+            (Wrapping(outflank2w) + Wrapping((if outflank2w == 0 { 0 } else { -1i64 as u64 }))).0
                 & mask2w;
 
         let flipped = flipped2x | flipped2y | flipped2z | flipped2w;
@@ -166,9 +229,9 @@ impl Board {
         let next_op = op & (!flipped);
 
         if player.is_white() {
-            Board{white: next_op, black: next_pl}
+            Board { white: next_op, black: next_pl }
         } else {
-            Board{white: next_pl, black: next_op}
+            Board { white: next_pl, black: next_op }
         }
     }
 

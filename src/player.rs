@@ -8,11 +8,11 @@ impl Player {
         let Player(b) = self;
         Player(!b)
     }
-    pub fn white() -> Player{
+    pub fn white() -> Player {
         Player(true)
     }
 
-    pub fn black() -> Player{
+    pub fn black() -> Player {
         Player(false)
     }
 
@@ -34,4 +34,3 @@ impl PartialEq for Player {
         p == q
     }
 }
-
