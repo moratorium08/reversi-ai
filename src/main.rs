@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate nom;
+
 pub mod board;
 pub mod util;
 pub mod player;

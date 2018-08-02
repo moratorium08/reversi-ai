@@ -247,7 +247,7 @@ impl Board {
             } else {
                 (self.white, self.black)
             };
-        let pos = p.to_index();
+        let pos = pos.to_index();
 
         self.gen_flip(pos, pl, op) != 0
     }
