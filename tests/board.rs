@@ -1,7 +1,7 @@
 extern crate client;
 
 use client::board::{Board, Hash, Pos, Flippable};
-use client::player::Player;
+use client::color::Color;
 
 #[test]
 fn board_impl_test() {
@@ -34,7 +34,7 @@ fn board_flip_test() {
     ];
 
     let mut board = Board::new();
-    let mut player = Player::black();
+    let mut player = Color::black();
 
     for &(s, black, white) in table.iter() {
         if let Ok(pos) = Pos::from_str(s.to_string()) {
@@ -65,7 +65,7 @@ fn board_flippable_test() {
     let finally = 1011119826434917888u64;
 
     let mut board = Board::new();
-    let mut player = Player::black();
+    let mut player = Color::black();
 
     for &(s, v) in table.iter() {
         if let Ok(pos) = Pos::from_str(s.to_string()) {

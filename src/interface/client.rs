@@ -1,7 +1,6 @@
 pub trait Client {
     fn input_command(&mut self) -> Result<Command, String>;
     fn output_command(&mut self, cmd: Command) -> Result<(), String>;
-    fn name(&self) -> &str;
 }
 
 #[derive(PartialEq, Eq, Debug)]
@@ -52,5 +51,13 @@ impl Command {
             Command::Move(ref m) => "Move ".to_string() + &(m.to_string()),
             _ => panic!("Oops, not implemented...")
         }
+    }
+
+    pub fn open_cmd(name: &str) -> Command {
+        Command::Open(name.to_string())
+    }
+
+    pub fn move_cmd(mv: Move) -> Command {
+        Command::Move(mv)
     }
 }

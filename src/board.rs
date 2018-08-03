@@ -2,7 +2,7 @@ use std::fmt;
 use std::num::Wrapping;
 
 
-use player::Player;
+use color::Color;
 use util::clz;
 
 
@@ -173,7 +173,7 @@ impl Board {
 
     }
 
-    pub fn print_player_board(&self, p: Player) {
+    pub fn print_player_board(&self, p: Color) {
         self.print_flippable_board(self.flippable(p));
     }
 
@@ -181,7 +181,7 @@ impl Board {
         self.print_flippable_board(Flippable(0));
     }
 
-    pub fn flip(&self, p: &BitIndexable, player: Player) -> Board {
+    pub fn flip(&self, p: &BitIndexable, player: Color) -> Board {
         let (pl, op) =
             if player.is_white() {
                 (self.black, self.white)
@@ -255,7 +255,7 @@ impl Board {
         flipped2x | flipped2y | flipped2z | flipped2w
     }
 
-    pub fn flippable(&self, player: Player) -> Flippable {
+    pub fn flippable(&self, player: Color) -> Flippable {
         let (pl, op) = if player.is_black() { (self.white, self.black) } else { (self.black, self.white) };
 
         // TODO: Software Pipelining
@@ -332,7 +332,7 @@ impl Board {
         Flippable(flippable1 | flippable2 | flippable3 | flippable4 | flippable5 | flippable6 | flippable7 | flippable8)
     }
 
-    fn is_valid(&self, pos: &BitIndexable, player: Player) -> bool {
+    fn is_valid(&self, pos: &BitIndexable, player: Color) -> bool {
         let (pl, op) =
             if player.is_white() {
                 (self.black, self.white)

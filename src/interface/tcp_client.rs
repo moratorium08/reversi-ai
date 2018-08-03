@@ -8,18 +8,16 @@ use interface::parser;
 struct Client {
     reader: io::BufReader<net::TcpStream>,
     writer: io::BufWriter<net::TcpStream>,
-    name: String,
 }
 
 struct ClientBuilder {
     host: String,
     port: u16,
-    name: String,
 }
 
 impl ClientBuilder {
     fn new() -> ClientBuilder {
-        ClientBuilder { host: "localhost".to_string(), port: 3000, name: "reversi".to_string() }
+        ClientBuilder { host: "localhost".to_string(), port: 3000 }
     }
 
     fn host(&mut self, host: String) -> &mut ClientBuilder {
@@ -32,11 +30,6 @@ impl ClientBuilder {
         self
     }
 
-    fn name(&mut self, name: String) -> &mut ClientBuilder {
-        self.name = name;
-        self
-    }
-
     fn finalize(self) -> Result<Client, String> {
         let addr = self.host + ":" + &(self.port.to_string());
         match net::TcpStream::connect(addr) {
@@ -45,13 +38,13 @@ impl ClientBuilder {
                     Ok(stream2) => {
                         let writer = io::BufWriter::new(stream);
                         let reader = io::BufReader::new(stream2);
-                        Ok(Client { reader, writer, name: self.name })
-                    },
+                        Ok(Client { reader, writer} )
+                    }
                     Err(_) => {
                         Err("Failed to clone stream".to_string())
                     }
                 }
-            },
+            }
             Err(_) => Err("Failed to connect host/addr".to_string()),
         }
     }
@@ -71,9 +64,5 @@ impl client::Client for Client {
             Ok(_) => Ok(()),
             _ => Err("Failed to send".to_string())
         }
-    }
-
-    fn name(&self) -> &str{
-        &self.name
     }
 }

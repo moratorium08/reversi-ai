@@ -1,6 +1,6 @@
 use board;
 use pmove;
-use ui::ui::UI;
+use player::player::Player;
 
 pub struct AI {}
 

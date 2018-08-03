@@ -2,14 +2,14 @@
 extern crate nom;
 
 pub mod board;
-pub mod player;
+pub mod color;
 pub mod pmove;
 pub mod util;
 pub mod interface;
-pub mod ui;
+pub mod player;
 
 use board::{Board, Pos, Hash};
-use player::{Player};
+use color::{Color};
 
 fn main() {
     let table = [
@@ -26,7 +26,7 @@ fn main() {
     ];
 
     let mut board = Board::new();
-    let mut player = Player::black();
+    let mut player = Color::black();
 
     for &(s, v) in table.iter() {
         if let Ok(pos) = Pos::from_str(s.to_string()) {
