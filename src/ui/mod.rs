@@ -1,1 +1,2 @@
-pub mod interface;
+pub mod ui;
+pub mod ai;

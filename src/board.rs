@@ -12,6 +12,9 @@ pub struct Pos {
     y: u8,
 }
 
+#[derive(PartialEq, Eq)]
+pub struct Flippable(u64);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Board {
     white: u64,
@@ -238,6 +241,83 @@ impl Board {
                 & mask2w;
 
         flipped2x | flipped2y | flipped2z | flipped2w
+    }
+
+    fn flippable(&self, player: Player) -> Flippable {
+        let (pl, op) = if player.is_white() { (self.white, self.black) } else { (self.black, self.white) };
+
+        // TODO: Software Pipelining
+
+        let x = 0x7e7e7e7e7e7e7e7eu64 & op;
+        let y = 0x00FFFFFFFFFFFF00u64 & op;
+        let z = 0x007e7e7e7e7e7e00u64 & op;
+        let blank = !(pl | op);
+
+        let tmp = x & (pl << 1);
+        let tmp = tmp | (x & (tmp << 1));
+        let tmp = tmp | (x & (tmp << 1));
+        let tmp = tmp | (x & (tmp << 1));
+        let tmp = tmp | (x & (tmp << 1));
+        let tmp = tmp | (x & (tmp << 1));
+        let flippable1 = blank & (tmp << 1);
+
+        let tmp = x & (pl >> 1);
+        let tmp = tmp | (x & (tmp >> 1));
+        let tmp = tmp | (x & (tmp >> 1));
+        let tmp = tmp | (x & (tmp >> 1));
+        let tmp = tmp | (x & (tmp >> 1));
+        let tmp = tmp | (x & (tmp >> 1));
+        let flippable2 = blank & (tmp >> 1);
+
+        let tmp = y & (pl << 8);
+        let tmp = tmp | (y & (tmp << 8));
+        let tmp = tmp | (y & (tmp << 8));
+        let tmp = tmp | (y & (tmp << 8));
+        let tmp = tmp | (y & (tmp << 8));
+        let tmp = tmp | (y & (tmp << 8));
+        let flippable3 = blank & (tmp << 8);
+
+        let tmp = y & (pl >> 8);
+        let tmp = tmp | (y & (tmp >> 8));
+        let tmp = tmp | (y & (tmp >> 8));
+        let tmp = tmp | (y & (tmp >> 8));
+        let tmp = tmp | (y & (tmp >> 8));
+        let tmp = tmp | (y & (tmp >> 8));
+        let flippable4 = blank & (tmp >> 8);
+
+        let tmp = z & (pl << 7);
+        let tmp = tmp | (z & (tmp << 7));
+        let tmp = tmp | (z & (tmp << 7));
+        let tmp = tmp | (z & (tmp << 7));
+        let tmp = tmp | (z & (tmp << 7));
+        let tmp = tmp | (z & (tmp << 7));
+        let flippable5 = blank & (tmp << 7);
+
+        let tmp = z & (pl >> 7);
+        let tmp = tmp | (z & (tmp >> 7));
+        let tmp = tmp | (z & (tmp >> 7));
+        let tmp = tmp | (z & (tmp >> 7));
+        let tmp = tmp | (z & (tmp >> 7));
+        let tmp = tmp | (z & (tmp >> 7));
+        let flippable6 = blank & (tmp >> 7);
+
+        let tmp = z & (pl << 9);
+        let tmp = tmp | (z & (tmp << 9));
+        let tmp = tmp | (z & (tmp << 9));
+        let tmp = tmp | (z & (tmp << 9));
+        let tmp = tmp | (z & (tmp << 9));
+        let tmp = tmp | (z & (tmp << 9));
+        let flippable7 = blank & (tmp << 9);
+
+        let tmp = z & (pl >> 9);
+        let tmp = tmp | (z & (tmp >> 9));
+        let tmp = tmp | (z & (tmp >> 9));
+        let tmp = tmp | (z & (tmp >> 9));
+        let tmp = tmp | (z & (tmp >> 9));
+        let tmp = tmp | (z & (tmp >> 9));
+        let flippable8 = blank & (tmp >> 9);
+
+        Flippable(flippable1 | flippable2 | flippable3 | flippable4 | flippable5 | flippable6 | flippable7 | flippable8)
     }
 
     fn is_valid(&self, pos: &BitIndexable, player: Player) -> bool {
