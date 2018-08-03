@@ -2,9 +2,11 @@
 extern crate nom;
 
 pub mod board;
-pub mod util;
 pub mod player;
+pub mod pmove;
+pub mod util;
 pub mod interface;
+pub mod ui;
 
 use board::{Board, Pos, Hash};
 use player::{Player};

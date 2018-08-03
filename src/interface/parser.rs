@@ -3,36 +3,7 @@ use std::vec::Vec;
 
 use nom::{digit, space};
 
-
-#[derive(PartialEq, Eq, Debug)]
-pub enum MatchResult {
-    Win,
-    Lose,
-    Tie,
-}
-
-#[derive(PartialEq, Eq, Debug)]
-pub enum Move {
-    Pass,
-    GiveUp,
-    Mv(String),
-}
-
-#[derive(PartialEq, Eq, Debug)]
-pub enum Color {
-    White,
-    Black,
-}
-
-pub enum Command {
-    Open(String),
-    End(MatchResult, u8, u8, String),
-    Start(Color, String, u64),
-    Ack(u64),
-    Move(Move),
-    Bye(Vec<(String, (u64, u64, u64))>),
-    Empty,
-}
+use interface::client::{Color, Command, MatchResult, Move};
 
 named!(sp<&str, ()>,
     do_parse!(
@@ -344,7 +315,7 @@ named!(empty_command<&str, Command>,
     )
 );
 
-named!(pub command_parser<&str, Command>, alt!(open_command|end_command|move_command|ack_command|start_command|bye_command|empty_command));
+named!(command_parser<&str, Command>, alt!(open_command|end_command|move_command|ack_command|start_command|bye_command|empty_command));
 
 #[test]
 fn test_command_parser() {
@@ -371,5 +342,13 @@ fn test_command_parser() {
     match command_parser("END WIN 1 2 piyo \n") {
         Ok(("", Command::End(_, _, _, _))) => (),
         _ => panic!("Failed to parse end command"),
+    }
+}
+
+
+pub fn parse(cmd: String) -> Result<Command, String> {
+    match command_parser(&cmd) {
+        Ok(("", cmd)) => Ok(cmd),
+        _ => Err("Failed to parse")
     }
 }
