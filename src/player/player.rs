@@ -3,5 +3,5 @@ use color;
 use pmove;
 
 pub trait Player {
-    fn play(board: board::Board, player: color::Color) -> pmove::Move;
+    fn play(& self, board: board::Board, player: color::Color) -> pmove::Move;
 }
