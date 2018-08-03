@@ -349,6 +349,6 @@ fn test_command_parser() {
 pub fn parse(cmd: String) -> Result<Command, String> {
     match command_parser(&cmd) {
         Ok(("", cmd)) => Ok(cmd),
-        _ => Err("Failed to parse")
+        _ => Err("Failed to parse".to_string())
     }
 }

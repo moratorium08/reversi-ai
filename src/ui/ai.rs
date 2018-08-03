@@ -1,3 +1,5 @@
+use board;
+use pmove;
 use ui::ui::UI;
 
 pub struct AI {}
@@ -9,7 +11,7 @@ impl AI {
     }
 }
 
-impl UI for AI {
+/*impl UI for AI {
     fn play(board: board::Board, player: player::Play) -> pmove::Move {
     }
-}
+}*/

@@ -1,4 +1,5 @@
 use std::io;
+use std::io::{BufRead, Write};
 use std::net;
 
 use interface::client;
@@ -37,14 +38,14 @@ impl ClientBuilder {
     }
 
     fn finalize(self) -> Result<Client, String> {
-        let addr = self.host + ":" + self.port.to_string();
+        let addr = self.host + ":" + &(self.port.to_string());
         match net::TcpStream::connect(addr) {
             Ok(stream) => {
                 match stream.try_clone() {
                     Ok(stream2) => {
                         let writer = io::BufWriter::new(stream);
-                        let reader = io::BufReader::new(stream);
-                        Client { reader, writer, self.name }
+                        let reader = io::BufReader::new(stream2);
+                        Ok(Client { reader, writer, name: self.name })
                     },
                     Err(_) => {
                         Err("Failed to clone stream".to_string())
@@ -57,17 +58,18 @@ impl ClientBuilder {
 }
 
 impl client::Client for Client {
-    fn input_command(&self) -> Result<Command, String> {
+    fn input_command(&mut self) -> Result<client::Command, String> {
         let mut s = String::new();
-        self.reader.read_line(&s);
+        self.reader.read_line(&mut s);
         parser::parse(s)
     }
 
-    fn output_command(&self, cmd: Command) -> Result<(), String> {
+    fn output_command(&mut self, cmd: client::Command) -> Result<(), String> {
         let s = cmd.to_string();
-        match self.writer.write(s + "\n") {
+        let buf = s + "\n";
+        match self.writer.write(buf.as_bytes()) {
             Ok(_) => Ok(()),
-            _ => Err("Failed to send")
+            _ => Err("Failed to send".to_string())
         }
     }
 

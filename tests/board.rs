@@ -1,6 +1,6 @@
 extern crate client;
 
-use client::board::{Board, Hash, Pos};
+use client::board::{Board, Hash, Pos, Flippable};
 use client::player::Player;
 
 #[test]
@@ -13,7 +13,7 @@ fn board_impl_test() {
 
     assert_eq!(board, Board::from_hash(board.hash()));
 
-    let hash = Hash::from_values(0x0000001008000000, 0x0000000810000000);
+    let hash = Hash::from_values(0x0000000810000000, 0x0000001008000000);
     assert_eq!(hash, board.hash());
     assert_eq!(Board::from_hash(hash), board);
 }
@@ -34,9 +34,9 @@ fn board_flip_test() {
     ];
 
     let mut board = Board::new();
-    let mut player = Player::white();
+    let mut player = Player::black();
 
-    for &(s, white, black) in table.iter() {
+    for &(s, black, white) in table.iter() {
         if let Ok(pos) = Pos::from_str(s.to_string()) {
             board = board.flip(&pos, player);
             let hash = Hash::from_values(white, black);
@@ -46,6 +46,37 @@ fn board_flip_test() {
             panic!("Failed to put : {}", s);
         }
     }
+}
+
+#[test]
+fn board_flippable_test() {
+    let table = [
+        ("D3", 17729692631040u64),
+        ("C3", 17181179904u64),
+        ("C4", 17729692237824u64),
+        ("C5", 17180917760u64),
+        ("B6", 68178344542720u64),
+        ("C6", 4407176468480u64),
+        ("B7", 624531228197376u64),
+        ("C7", 1424967607521280u64),
+        ("B5", 578774270830838272u64),
+        ("A8", 72340172841156608u64),
+    ];
+    let finally = 1011119826434917888u64;
+
+    let mut board = Board::new();
+    let mut player = Player::black();
+
+    for &(s, v) in table.iter() {
+        if let Ok(pos) = Pos::from_str(s.to_string()) {
+            assert_eq!(Flippable(v), board.flippable(player));
+            board = board.flip(&pos, player);
+            player = player.opposite();
+        } else {
+            panic!("Failed to put : {}", s);
+        }
+    }
+    assert_eq!(Flippable(finally), board.flippable(player));
 }
 
 #[test]

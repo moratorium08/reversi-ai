@@ -12,8 +12,8 @@ pub struct Pos {
     y: u8,
 }
 
-#[derive(PartialEq, Eq)]
-pub struct Flippable(u64);
+#[derive(PartialEq, Eq, Debug)]
+pub struct Flippable(pub u64);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Board {
@@ -95,8 +95,8 @@ impl fmt::Display for Hash {
 impl Board {
     pub fn new() -> Board {
         Board {
-            white: (1 << 27) + (1 << 36),
-            black: (1 << 28) + (1 << 35),
+            black: (1 << 27) + (1 << 36),
+            white: (1 << 28) + (1 << 35),
         }
     }
 
@@ -147,7 +147,8 @@ impl Board {
         ret
     }
 
-    pub fn print(&self) {
+    fn print_flippable_board(&self, fl: Flippable) {
+        let Flippable(flippable) = fl;
         println!("  A B C D E F G H");
         println!("  ---------------");
         for i in 0..64 {
@@ -162,11 +163,22 @@ impl Board {
                 print!("o ");
             } else if ((1 << i) & self.white) != 0 {
                 print!("x ");
+            } else if ((1 << i) & flippable) != 0 {
+                print!(". ");
             } else {
                 print!("  ");
             }
         }
         print!("\n");
+
+    }
+
+    pub fn print_player_board(&self, p: Player) {
+        self.print_flippable_board(self.flippable(p));
+    }
+
+    pub fn print(&self) {
+        self.print_flippable_board(Flippable(0));
     }
 
     pub fn flip(&self, p: &BitIndexable, player: Player) -> Board {
@@ -243,8 +255,8 @@ impl Board {
         flipped2x | flipped2y | flipped2z | flipped2w
     }
 
-    fn flippable(&self, player: Player) -> Flippable {
-        let (pl, op) = if player.is_white() { (self.white, self.black) } else { (self.black, self.white) };
+    pub fn flippable(&self, player: Player) -> Flippable {
+        let (pl, op) = if player.is_black() { (self.white, self.black) } else { (self.black, self.white) };
 
         // TODO: Software Pipelining
 

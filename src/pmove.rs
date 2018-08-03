@@ -1,7 +1,7 @@
 use board;
 
 pub enum Move {
-    Mv(Pos),
+    Mv(board::Pos),
     Giveup,
     Pass,
 }
