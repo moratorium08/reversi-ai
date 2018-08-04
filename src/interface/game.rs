@@ -108,6 +108,7 @@ impl<T: client::Client, S: player::Player> Game<T, S> {
 
     fn my_move(&mut self) {
         let c = &mut self.client;
+        println!("Board Hash: {}", self.board.hash());
         let pmove = self.player.play(self.board, self.color);
         self.board = Game::<T, S>::do_move(&pmove, self.board, self.color);
 
@@ -115,6 +116,7 @@ impl<T: client::Client, S: player::Player> Game<T, S> {
         match c.output_command(client::Command::Move(cmove)) {
             Ok(_) => {
                 self.board.print();
+                println!("{}", self.board.hash());
             }
             Err(s) => {
                 panic!("Failed to send command: {}", s);

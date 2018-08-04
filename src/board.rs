@@ -1,5 +1,4 @@
 use std::fmt;
-use std::num::Wrapping;
 use std::vec;
 
 
@@ -303,69 +302,76 @@ impl Board {
         let z = 0x007e7e7e7e7e7e00u64 & op;
         let blank = !(pl | op);
 
-        let tmp = x & (pl << 1);
-        let tmp = tmp | (x & (tmp << 1));
-        let tmp = tmp | (x & (tmp << 1));
-        let tmp = tmp | (x & (tmp << 1));
-        let tmp = tmp | (x & (tmp << 1));
-        let tmp = tmp | (x & (tmp << 1));
-        let flippable1 = blank & (tmp << 1);
+        let tmp1 = x & (pl << 1);
+        let tmp2 = x & (pl >> 1);
+        let tmp3 = y & (pl << 8);
+        let tmp4 = y & (pl >> 8);
 
-        let tmp = x & (pl >> 1);
-        let tmp = tmp | (x & (tmp >> 1));
-        let tmp = tmp | (x & (tmp >> 1));
-        let tmp = tmp | (x & (tmp >> 1));
-        let tmp = tmp | (x & (tmp >> 1));
-        let tmp = tmp | (x & (tmp >> 1));
-        let flippable2 = blank & (tmp >> 1);
+        let tmp1 = tmp1 | (x & (tmp1 << 1));
+        let tmp2 = tmp2 | (x & (tmp2 >> 1));
+        let tmp3 = tmp3 | (y & (tmp3 << 8));
+        let tmp4 = tmp4 | (y & (tmp4 >> 8));
 
-        let tmp = y & (pl << 8);
-        let tmp = tmp | (y & (tmp << 8));
-        let tmp = tmp | (y & (tmp << 8));
-        let tmp = tmp | (y & (tmp << 8));
-        let tmp = tmp | (y & (tmp << 8));
-        let tmp = tmp | (y & (tmp << 8));
-        let flippable3 = blank & (tmp << 8);
+        let tmp1 = tmp1 | (x & (tmp1 << 1));
+        let tmp2 = tmp2 | (x & (tmp2 >> 1));
+        let tmp3 = tmp3 | (y & (tmp3 << 8));
+        let tmp4 = tmp4 | (y & (tmp4 >> 8));
 
-        let tmp = y & (pl >> 8);
-        let tmp = tmp | (y & (tmp >> 8));
-        let tmp = tmp | (y & (tmp >> 8));
-        let tmp = tmp | (y & (tmp >> 8));
-        let tmp = tmp | (y & (tmp >> 8));
-        let tmp = tmp | (y & (tmp >> 8));
-        let flippable4 = blank & (tmp >> 8);
+        let tmp1 = tmp1 | (x & (tmp1 << 1));
+        let tmp2 = tmp2 | (x & (tmp2 >> 1));
+        let tmp3 = tmp3 | (y & (tmp3 << 8));
+        let tmp4 = tmp4 | (y & (tmp4 >> 8));
 
-        let tmp = z & (pl << 7);
-        let tmp = tmp | (z & (tmp << 7));
-        let tmp = tmp | (z & (tmp << 7));
-        let tmp = tmp | (z & (tmp << 7));
-        let tmp = tmp | (z & (tmp << 7));
-        let tmp = tmp | (z & (tmp << 7));
-        let flippable5 = blank & (tmp << 7);
+        let tmp1 = tmp1 | (x & (tmp1 << 1));
+        let tmp2 = tmp2 | (x & (tmp2 >> 1));
+        let tmp3 = tmp3 | (y & (tmp3 << 8));
+        let tmp4 = tmp4 | (y & (tmp4 >> 8));
 
-        let tmp = z & (pl >> 7);
-        let tmp = tmp | (z & (tmp >> 7));
-        let tmp = tmp | (z & (tmp >> 7));
-        let tmp = tmp | (z & (tmp >> 7));
-        let tmp = tmp | (z & (tmp >> 7));
-        let tmp = tmp | (z & (tmp >> 7));
-        let flippable6 = blank & (tmp >> 7);
+        let tmp1 = tmp1 | (x & (tmp1 << 1));
+        let tmp2 = tmp2 | (x & (tmp2 >> 1));
+        let tmp3 = tmp3 | (y & (tmp3 << 8));
+        let tmp4 = tmp4 | (y & (tmp4 >> 8));
 
-        let tmp = z & (pl << 9);
-        let tmp = tmp | (z & (tmp << 9));
-        let tmp = tmp | (z & (tmp << 9));
-        let tmp = tmp | (z & (tmp << 9));
-        let tmp = tmp | (z & (tmp << 9));
-        let tmp = tmp | (z & (tmp << 9));
-        let flippable7 = blank & (tmp << 9);
+        let flippable1 = blank & (tmp1 << 1);
+        let flippable2 = blank & (tmp2 >> 1);
+        let flippable3 = blank & (tmp3 << 8);
+        let flippable4 = blank & (tmp4 >> 8);
 
-        let tmp = z & (pl >> 9);
-        let tmp = tmp | (z & (tmp >> 9));
-        let tmp = tmp | (z & (tmp >> 9));
-        let tmp = tmp | (z & (tmp >> 9));
-        let tmp = tmp | (z & (tmp >> 9));
-        let tmp = tmp | (z & (tmp >> 9));
-        let flippable8 = blank & (tmp >> 9);
+        let tmp5 = z & (pl << 7);
+        let tmp6 = z & (pl >> 7);
+        let tmp7 = z & (pl << 9);
+        let tmp8 = z & (pl >> 9);
+
+        let tmp5 = tmp5 | (z & (tmp5 << 7));
+        let tmp6 = tmp6 | (z & (tmp6 >> 7));
+        let tmp7 = tmp7 | (z & (tmp7 << 9));
+        let tmp8 = tmp8 | (z & (tmp8 >> 9));
+
+        let tmp5 = tmp5 | (z & (tmp5 << 7));
+        let tmp6 = tmp6 | (z & (tmp6 >> 7));
+        let tmp7 = tmp7 | (z & (tmp7 << 9));
+        let tmp8 = tmp8 | (z & (tmp8 >> 9));
+
+        let tmp5 = tmp5 | (z & (tmp5 << 7));
+        let tmp6 = tmp6 | (z & (tmp6 >> 7));
+        let tmp7 = tmp7 | (z & (tmp7 << 9));
+        let tmp8 = tmp8 | (z & (tmp8 >> 9));
+
+        let tmp5 = tmp5 | (z & (tmp5 << 7));
+        let tmp6 = tmp6 | (z & (tmp6 >> 7));
+        let tmp7 = tmp7 | (z & (tmp7 << 9));
+        let tmp8 = tmp8 | (z & (tmp8 >> 9));
+
+
+        let tmp5 = tmp5 | (z & (tmp5 << 7));
+        let tmp6 = tmp6 | (z & (tmp6 >> 7));
+        let tmp7 = tmp7 | (z & (tmp7 << 9));
+        let tmp8 = tmp8 | (z & (tmp8 >> 9));
+
+        let flippable5 = blank & (tmp5 << 7);
+        let flippable6 = blank & (tmp6 >> 7);
+        let flippable7 = blank & (tmp7 << 9);
+        let flippable8 = blank & (tmp8 >> 9);
 
         Flippable(flippable1 | flippable2 | flippable3 | flippable4 | flippable5 | flippable6 | flippable7 | flippable8)
     }
