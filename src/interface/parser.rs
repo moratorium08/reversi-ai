@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use std::vec::Vec;
 
-use nom::{digit, space};
+use nom::{digit};
 
 use interface::client::{Color, Command, MatchResult, Move};
 

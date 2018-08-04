@@ -1,3 +1,6 @@
+use rand::Rng;
+use rand::thread_rng;
+
 use board;
 use color;
 use pmove;
@@ -18,11 +21,12 @@ impl Player for AI {
         let poses = f.poses();
         let len = poses.len();
 
+        let mut rng = thread_rng();
+
         if len == 0 {
             pmove::Move::Pass
         } else {
-            pmove::Move::Mv(poses[0])
+            pmove::Move::Mv(poses[rng.gen_range(0, len)])
         }
     }
 }
-
