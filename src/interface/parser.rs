@@ -307,6 +307,7 @@ fn test_move_command() {
     }
 }
 
+
 named!(empty_command<&str, Command>,
        do_parse!(
         many0!(sp) >>

@@ -1,12 +1,13 @@
 use std::fmt;
 use std::num::Wrapping;
+use std::vec;
 
 
 use color::Color;
 use util::clz;
 
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Pos {
     x: u8,
     y: u8,
@@ -14,6 +15,20 @@ pub struct Pos {
 
 #[derive(PartialEq, Eq, Debug)]
 pub struct Flippable(pub u64);
+
+impl Flippable {
+    pub fn poses(&self) -> vec::Vec<Pos> {
+        let Flippable(x) = *self;
+        let mut v: vec::Vec<Pos> = vec![];
+
+        for i in 0u8..64u8 {
+            if x & (1 << i) != 0 {
+                v.push(Pos::from_index(i));
+            }
+        }
+        v
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Board {
@@ -46,6 +61,10 @@ impl Pos {
         s.push(c0);
         s.push(c1);
         s
+    }
+
+    pub fn from_index(index: u8) -> Pos {
+        Pos{x: index / 8, y: index % 8 }
     }
 }
 

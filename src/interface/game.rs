@@ -23,7 +23,7 @@ pub struct Game<T: client::Client, S: player::Player> {
 }
 
 impl<T: client::Client, S: player::Player> Game<T, S> {
-    fn new(mut c: T, pl: S, name: &str) -> Result<Game<T, S>, String> {
+    pub fn new(mut c: T, pl: S, name: &str) -> Result<Game<T, S>, String> {
         let open_cmd = client::Command::open_cmd(name);
 
         match (&mut c).output_command(open_cmd) {
@@ -46,6 +46,7 @@ impl<T: client::Client, S: player::Player> Game<T, S> {
             Ok(cmd) => {
                 match cmd {
                     client::Command::Bye(scores) => {
+                        self.status = Status::Terminate;
                         println!("Bye.");
                     }
                     client::Command::Start(color, oname, t) => {
@@ -157,11 +158,10 @@ impl<T: client::Client, S: player::Player> Game<T, S> {
         }
     }
 
-    fn proc_end(&self, result: client::MatchResult, n: u8, m: u8, reason: String) {
-    }
+    fn proc_end(&self, result: client::MatchResult, n: u8, m: u8, reason: String) {}
 
 
-    fn main_loop(mut self) -> Result<(), String> {
+    pub fn main_loop(mut self) -> Result<(), String> {
         loop {
             match self.status {
                 Status::Wait => self.wait_start(),
@@ -170,7 +170,6 @@ impl<T: client::Client, S: player::Player> Game<T, S> {
                 Status::Terminate => break,
             };
         }
-
         Ok(())
     }
 }

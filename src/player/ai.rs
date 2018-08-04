@@ -1,4 +1,5 @@
 use board;
+use color;
 use pmove;
 use player::player::Player;
 
@@ -6,12 +7,22 @@ pub struct AI {}
 
 
 impl AI {
-    fn new() -> AI {
+    pub fn new() -> AI {
         AI{}
     }
 }
 
-/*impl UI for AI {
-    fn play(board: board::Board, player: player::Play) -> pmove::Move {
+impl Player for AI {
+    fn play(& self, board: board::Board, col: color::Color) -> pmove::Move {
+        let f = board.flippable(col);
+        let poses = f.poses();
+        let len = poses.len();
+
+        if len == 0 {
+            pmove::Move::Pass
+        } else {
+            pmove::Move::Mv(poses[0])
+        }
     }
-}*/
+}
+

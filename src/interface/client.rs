@@ -48,7 +48,7 @@ impl Command {
     pub fn to_string(&self) -> String {
         match *self {
             Command::Open(ref s) => "OPEN ".to_string() + s,
-            Command::Move(ref m) => "Move ".to_string() + &(m.to_string()),
+            Command::Move(ref m) => "MOVE ".to_string() + &(m.to_string()),
             _ => panic!("Oops, not implemented...")
         }
     }
