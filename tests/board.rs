@@ -16,6 +16,7 @@ fn board_impl_test() {
     let hash = Hash::from_values(0x0000000810000000, 0x0000001008000000);
     assert_eq!(hash, board.hash());
     assert_eq!(Board::from_hash(hash), board);
+    assert_eq!(board.result(), (2, 2));
 }
 
 #[test]
@@ -46,6 +47,7 @@ fn board_flip_test() {
             panic!("Failed to put : {}", s);
         }
     }
+
 }
 
 #[test]

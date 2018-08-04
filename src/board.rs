@@ -101,21 +101,22 @@ impl Hash {
 impl fmt::Display for Hash {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let Hash(data) = *self;
+        let mut ret: fmt::Result;
         for (i, x) in data.iter().enumerate() {
-            match if i == 7 { write!(f, "{:02x} ", x) } else { write!(f, "{:02x}", x) } {
+            match if i == 7 { write!(f, "{:02x}, ", x) } else { write!(f, "{:02x}", x) } {
                 Ok(_) => (),
                 x => return x
             }
         }
-        write!(f, "\n")
+        Ok(())
     }
 }
 
 impl Board {
     pub fn new() -> Board {
         Board {
-            black: (1 << 27) + (1 << 36),
-            white: (1 << 28) + (1 << 35),
+            white: (1 << 27) + (1 << 36),
+            black: (1 << 28) + (1 << 35),
         }
     }
 
@@ -156,9 +157,9 @@ impl Board {
                 ret.push_str("\n");
             }
             if ((1 << i) & self.black) != 0 {
-                ret.push_str("o");
-            } else if ((1 << i) & self.white) != 0 {
                 ret.push_str("x");
+            } else if ((1 << i) & self.white) != 0 {
+                ret.push_str("o");
             } else {
                 ret.push_str(" ");
             }
@@ -179,9 +180,9 @@ impl Board {
             }
 
             if ((1 << i) & self.black) != 0 {
-                print!("o ");
-            } else if ((1 << i) & self.white) != 0 {
                 print!("x ");
+            } else if ((1 << i) & self.white) != 0 {
+                print!("o ");
             } else if ((1 << i) & flippable) != 0 {
                 print!(". ");
             } else {
@@ -200,32 +201,36 @@ impl Board {
         self.print_flippable_board(Flippable(0));
     }
 
+    #[inline(always)]
+    pub fn result(&self) -> (u32, u32){
+        (self.black.count_ones(), self.white.count_ones())
+    }
+
     pub fn flip(&self, p: &BitIndexable, player: Color) -> Board {
         let (pl, op) =
             if player.is_white() {
-                (self.black, self.white)
-            } else {
                 (self.white, self.black)
+            } else {
+                (self.black, self.white)
             };
         let pos = p.to_index();
 
         let flipped = self.gen_flip(pos, pl, op);
-        println!("{}", flipped);
 
         let next_pl = pl | (1u64 << pos) | flipped;
         let next_op = op & (!flipped);
 
         if player.is_white() {
-            Board { white: next_op, black: next_pl }
-        } else {
             Board { white: next_pl, black: next_op }
+        } else {
+            Board { white: next_op, black: next_pl }
         }
     }
 
     // ref: http://primenumber.hatenadiary.jp/entry/2016/12/26/063226
     fn gen_flip(&self, pos: u8, pl: u64, op: u64) -> u64 {
         let x = op;
-        let yzw = &(op & 0x7e7e7e7e7e7e7e7e);
+        let yzw = op & 0x7e7e7e7e7e7e7e7eu64;
 
         let maskx = 0x0080808080808080u64 >> (63 - pos);
         let masky = 0x7f00000000000000u64 >> (63 - pos);
@@ -233,14 +238,14 @@ impl Board {
         let maskw = 0x0040201008040201u64 >> (63 - pos);
 
         let outflankx = (0x8000000000000000u64 >> clz(!x & maskx)) & pl;
-        let outflanky = (0x8000000000000000u64 >> clz(!*yzw & masky)) & pl;
-        let outflankz = (0x8000000000000000u64 >> clz(!*yzw & maskz)) & pl;
-        let outflankw = (0x8000000000000000u64 >> clz(!*yzw & maskw)) & pl;
+        let outflanky = (0x8000000000000000u64 >> clz(!yzw & masky)) & pl;
+        let outflankz = (0x8000000000000000u64 >> clz(!yzw & maskz)) & pl;
+        let outflankw = (0x8000000000000000u64 >> clz(!yzw & maskw)) & pl;
 
-        let flippedx = ((-(outflankx as i64) * 2) as u64) & maskx;
-        let flippedy = ((-(outflanky as i64) * 2) as u64) & masky;
-        let flippedz = ((-(outflankz as i64) * 2) as u64) & maskz;
-        let flippedw = ((-(outflankw as i64) * 2) as u64) & maskw;
+        let flippedx = (((-(outflankx as i64)) * 2) as u64) & maskx;
+        let flippedy = (((-(outflanky as i64)) * 2) as u64) & masky;
+        let flippedz = (((-(outflankz as i64)) * 2) as u64) & maskz;
+        let flippedw = (((-(outflankw as i64)) * 2) as u64) & maskw;
 
         let mask2x = 0x0101010101010100u64 << pos;
         let mask2y = 0x00000000000000feu64 << pos;
@@ -248,34 +253,48 @@ impl Board {
         let mask2w = 0x8040201008040200u64 << pos;
 
         // releaseビルドの時は使うようにする
-        /*let outflank2x = mask2x & ((x | !mask2x) + 1) & pl;
-        let outflank2y = mask2y & ((*yzw | !mask2y) + 1) & pl;
-        let outflank2z = mask2z & ((*yzw | !mask2z) + 1) & pl;
-        let outflank2w = mask2w & ((*yzw | !mask2w) + 1) & pl;*/
-        let outflank2x = mask2x & (Wrapping((x | !mask2x)) + Wrapping(1)).0 & pl;
-        let outflank2y = mask2y & (Wrapping(*yzw | !mask2y) + Wrapping(1)).0 & pl;
-        let outflank2z = mask2z & (Wrapping(*yzw | !mask2z) + Wrapping(1)).0 & pl;
-        let outflank2w = mask2w & (Wrapping(*yzw | !mask2w) + Wrapping(1)).0 & pl;
+        let outflank2x = mask2x & ((x | !mask2x) + 1) & pl;
+        let outflank2y = mask2y & ((yzw | !mask2y) + 1) & pl;
+        let outflank2z = mask2z & ((yzw | !mask2z) + 1) & pl;
+        let outflank2w = mask2w & ((yzw | !mask2w) + 1) & pl;
+        /*let outflank2x = mask2x & (Wrapping(x   | !mask2x) + Wrapping(1)).0 & pl;
+        let outflank2y = mask2y & (Wrapping(yzw | !mask2y) + Wrapping(1)).0 & pl;
+        let outflank2z = mask2z & (Wrapping(yzw | !mask2z) + Wrapping(1)).0 & pl;
+        let outflank2w = mask2w & (Wrapping(yzw | !mask2w) + Wrapping(1)).0 & pl;*/
 
 
-        let flipped2x = flippedx |
-            (Wrapping(outflank2x) + Wrapping((if outflank2x == 0 { 0 } else { -1i64 as u64 }))).0
-                & mask2x;
-        let flipped2y = flippedy |
-            (Wrapping(outflank2y) + Wrapping((if outflank2y == 0 { 0 } else { -1i64 as u64 }))).0
-                & mask2y;
-        let flipped2z = flippedz |
-            (Wrapping(outflank2z) + Wrapping((if outflank2z == 0 { 0 } else { -1i64 as u64 }))).0
-                & mask2z;
-        let flipped2w = flippedw |
-            (Wrapping(outflank2w) + Wrapping((if outflank2w == 0 { 0 } else { -1i64 as u64 }))).0
-                & mask2w;
+        let outflank2x = if outflank2x != 0 {
+            ((outflank2x as i64) - 1i64) as u64
+        } else {
+            outflank2x
+        };
+        let outflank2y = if outflank2y != 0 {
+            ((outflank2y as i64) - 1i64) as u64
+        } else {
+            outflank2y
+        };
+        let outflank2z = if outflank2z != 0 {
+            (outflank2z as i64 - 1i64) as u64
+        } else {
+            outflank2z
+        };
+        let outflank2w = if outflank2w != 0 {
+            (outflank2w as i64 - 1i64) as u64
+        } else {
+            outflank2w
+        };
+
+
+        let flipped2x = flippedx | (outflank2x & mask2x);
+        let flipped2y = flippedy | (outflank2y & mask2y);
+        let flipped2z = flippedz | (outflank2z & mask2z);
+        let flipped2w = flippedw | (outflank2w & mask2w);
 
         flipped2x | flipped2y | flipped2z | flipped2w
     }
 
     pub fn flippable(&self, player: Color) -> Flippable {
-        let (pl, op) = if player.is_black() { (self.white, self.black) } else { (self.black, self.white) };
+        let (pl, op) = if player.is_white() { (self.white, self.black) } else { (self.black, self.white) };
 
         // TODO: Software Pipelining
 
@@ -353,7 +372,7 @@ impl Board {
 
     fn is_valid(&self, pos: &BitIndexable, player: Color) -> bool {
         let (pl, op) =
-            if player.is_white() {
+            if player.is_black() {
                 (self.black, self.white)
             } else {
                 (self.white, self.black)

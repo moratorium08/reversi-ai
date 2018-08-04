@@ -9,4 +9,6 @@ fn player_impl_test() {
     let q = Color::black ();
 
     assert_eq!(p, q.opposite());
+    assert!(p.is_white());
+    assert!(q.is_black());
 }
