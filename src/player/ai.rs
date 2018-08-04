@@ -15,7 +15,7 @@ pub struct AI<T: evaluator::Evaluator> {
 const LAST_SHOT: u32 = 14;
 const LAST_SHOT_SIZE: u32 = 64 - LAST_SHOT;
 
-const ALPHA_BETA_DEPTH: u32 = 5;
+const ALPHA_BETA_DEPTH: u32 = 0;
 
 
 impl <T: evaluator::Evaluator> AI<T> {
@@ -49,7 +49,7 @@ impl <T: evaluator::Evaluator> AI<T> {
             let mut current = 0i64;
             for pos in poses.iter() {
                 let b = board.flip(pos, player);
-                let v = self.alphabeta(b,
+                let v = -self.alphabeta(b,
                                        player.opposite(),
                                        false,
                                        i64::min_value(),
@@ -71,7 +71,6 @@ impl <T: evaluator::Evaluator> AI<T> {
                  mut alpha: i64,
                  beta: i64,
                  depth: u32) -> i64 {
-        println!("{}, {}", alpha, beta);
         if depth == 0 {
             if player.is_black() {
                 return self.evaluator.evaluate(board);
@@ -114,7 +113,7 @@ impl <T: evaluator::Evaluator> AI<T> {
                                    -beta,
                                    -alpha,
                                    depth - 1);
-            let alpha = if alpha < v {v} else {alpha};
+            alpha = if alpha < v {v} else {alpha};
             if alpha >= beta {
                 return alpha;
             }

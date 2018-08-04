@@ -1,4 +1,5 @@
 use board;
+use color;
 use player::evaluator::Evaluator;
 
 pub struct Linear {
@@ -40,7 +41,11 @@ impl Evaluator for Linear {
                 }
             }
         }
+        let board::Flippable(b) = board.flippable(color::Color::black());
+        let board::Flippable(c) = board.flippable(color::Color::white());
 
-        ret
+        let point = b.count_ones() as i64 - c.count_ones() as i64;
+
+        ret + point * 3
     }
 }
