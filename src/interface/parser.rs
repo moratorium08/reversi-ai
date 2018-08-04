@@ -80,6 +80,17 @@ named!(uint64<&str, u64>,
     )
 );
 
+named!(int64<&str, i64>,
+    do_parse!(
+        sign: many_m_n!(0, 1, tag!("-")) >>
+        val: map_res!(
+            digit,
+            FromStr::from_str
+        ) >>
+        (if sign.len() == 1 {-1 * val} else {val})
+    )
+);
+
 named!(end_command<&str, Command>,
        do_parse!(
            ws!(tag!("END")) >>
@@ -123,12 +134,12 @@ fn test_end_command() {
 }
 
 
-named!(score<&str, (String, (u64, u64, u64))>,
+named!(score<&str, (String, (i64, u64, u64))>,
     do_parse!(
         many0!(sp) >>
         st: string >>
         many1!(sp) >>
-        x: uint64 >>
+        x: int64 >>
         many1!(sp) >>
         y: uint64 >>
         many1!(sp) >>
@@ -137,7 +148,7 @@ named!(score<&str, (String, (u64, u64, u64))>,
     )
 );
 
-named!(scores<&str, Vec<(String, (u64, u64, u64))>>,
+named!(scores<&str, Vec<(String, (i64, u64, u64))>>,
     do_parse!(
         ret: many0!(score) >>
         (ret)
@@ -157,10 +168,10 @@ named!(bye_command<&str, Command>,
 #[test]
 fn test_bye_command() {
     let table = [
-        ("BYE hoge \t 1 2 3\n", &(vec![("hoge", (1u64, 2u64, 3u64))])),
-        ("BYE hoge \t 1 2 3 fuga 3 4 5\n", &(vec![
-            ("hoge", (1u64, 2u64, 3u64)),
-            ("fuga", (3u64, 4u64, 5u64))
+        ("BYE hoge \t 1 2 3\n", &(vec![("hoge", (1i64, 2u64, 3u64))])),
+        ("BYE hoge \t 1 2 3 fuga -3 4 5\n", &(vec![
+            ("hoge", (1i64, 2u64, 3u64)),
+            ("fuga", (-3i64, 4u64, 5u64))
         ]))
     ];
 
@@ -332,7 +343,7 @@ fn test_command_parser() {
         Ok(("", Command::Start(_, _, _))) => (),
         _ => panic!("Failed to parse start command"),
     }
-    match command_parser("BYE neko 1 2 3\n") {
+    match command_parser("BYE 猫 2 3 1 Anon. -2 1 3\n") {
         Ok(("", Command::Bye(_))) => (),
         _ => panic!("Failed to parse bye command"),
     }

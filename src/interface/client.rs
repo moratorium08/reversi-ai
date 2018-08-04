@@ -40,7 +40,7 @@ pub enum Command {
     Start(Color, String, u64),
     Ack(u64),
     Move(Move),
-    Bye(Vec<(String, (u64, u64, u64))>),
+    Bye(Vec<(String, (i64, u64, u64))>),
     Empty,
 }
 
