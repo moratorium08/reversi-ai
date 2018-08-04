@@ -62,7 +62,6 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
     let mut current = 64u8;
     let mut status = MatchResult::Lose(64);
 
-    let w = poses;
     while poses > 0 {
         let z = poses.trailing_zeros() as u8;
         if z < 63 {
@@ -72,6 +71,7 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
             poses = 0;
             cnt = 64;
         }
+
         let r = winnable(board.flip(&(cnt - 1), player), op, false);
         match r {
             MatchResult::Lose(d) => { return MatchResult::Win(d); }

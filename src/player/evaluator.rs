@@ -1,5 +1,5 @@
 use board;
 
-trait Evaluator {
-    fn eval(board: board::Board) -> i64;
+pub trait Evaluator {
+    fn evaluate(&self, board: board::Board) -> i64;
 }

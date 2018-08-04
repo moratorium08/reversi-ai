@@ -20,3 +20,12 @@ fn bench_winnable_1(bench: &mut Bencher) {
         get_winnable(board, Color::white());
     });
 }
+
+#[bench]
+fn bench_winnable_2(bench: &mut Bencher) {
+    let hash = Hash::from_values(0x0000003258bc3c00, 0x0025ffcda743c3ff);
+    let board = Board::from_hash(hash);
+    bench.iter(|| {
+        get_winnable(board, Color::white());
+    });
+}

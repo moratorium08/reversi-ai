@@ -13,6 +13,7 @@ pub mod player;
 use interface::game;
 use interface::tcp_client;
 use player::ai;
+use player::linear_evaluator;
 
 
 const HOST: &str = "127.0.0.1";
@@ -28,7 +29,7 @@ fn main() {
         .unwrap();
 
 
-    let player = ai::AI::new();
+    let player = ai::AI::new(linear_evaluator::Linear::new());
 
     match game::Game::new(client, player, NAME) {
         Ok(mut g) => g.main_loop(),

@@ -65,6 +65,10 @@ impl Pos {
     pub fn from_index(index: u8) -> Pos {
         Pos{x: index / 8, y: index % 8 }
     }
+
+    pub fn from_point(x: u8, y: u8) -> Pos {
+        Pos{x, y}
+    }
 }
 
 pub trait BitIndexable {
@@ -132,6 +136,17 @@ impl Board {
             tmp_black >>= 8;
         }
         Hash(ret)
+    }
+
+    pub fn color<T: BitIndexable>(&self, pos: T) -> Option<Color> {
+        let i = pos.to_index();
+        if (1 << i) & self.white != 0 {
+            Some(Color::white())
+        } else if (1 << i) & self.black != 0 {
+            Some(Color::black())
+        } else {
+            None
+        }
     }
 
     pub fn from_hash(hash: Hash) -> Board {
