@@ -277,26 +277,10 @@ impl Board {
         let outflank2w = mask2w & (Wrapping(yzw | !mask2w) + Wrapping(1)).0 & pl;*/
 
 
-        let outflank2x = if outflank2x != 0 {
-            ((outflank2x as i64) - 1i64) as u64
-        } else {
-            outflank2x
-        };
-        let outflank2y = if outflank2y != 0 {
-            ((outflank2y as i64) - 1i64) as u64
-        } else {
-            outflank2y
-        };
-        let outflank2z = if outflank2z != 0 {
-            (outflank2z as i64 - 1i64) as u64
-        } else {
-            outflank2z
-        };
-        let outflank2w = if outflank2w != 0 {
-            (outflank2w as i64 - 1i64) as u64
-        } else {
-            outflank2w
-        };
+        let outflank2x = ((outflank2x as i64) - ((outflank2x != 0) as i64)) as u64;
+        let outflank2y = ((outflank2y as i64) - ((outflank2y != 0) as i64)) as u64;
+        let outflank2z = ((outflank2z as i64) - ((outflank2z != 0) as i64)) as u64;
+        let outflank2w = ((outflank2w as i64) - ((outflank2w != 0) as i64)) as u64;
 
 
         let flipped2x = flippedx | (outflank2x & mask2x);

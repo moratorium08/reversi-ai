@@ -4,8 +4,8 @@ use pmove;
 use player::player::Player;
 
 pub enum MatchResult {
-    Win(u8),
-    Lose(u8),
+    Win,
+    Lose,
     Tie,
 }
 
@@ -19,18 +19,17 @@ impl board::BitIndexable for u8 {
 #[inline(always)]
 fn judge(player: color::Color, black: u8, white: u8) -> MatchResult {
     if black > white {
-        let diff = black - white;
         if player.is_black() {
-            MatchResult::Win(diff)
+            MatchResult::Win
         } else {
-            MatchResult::Lose(diff)
+            MatchResult::Lose
         }
     } else if white > black {
         let diff = white - black;
         if player.is_white() {
-            MatchResult::Win(diff)
+            MatchResult::Win
         } else {
-            MatchResult::Lose(diff)
+            MatchResult::Lose
         }
     } else {
         MatchResult::Tie
@@ -52,15 +51,14 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
             return judge(player, black, white);
         }
         match winnable(board, op, true) {
-            MatchResult::Win(d) => { return MatchResult::Lose(d); }
-            MatchResult::Lose(d) => { return MatchResult::Win(d); }
+            MatchResult::Win => { return MatchResult::Lose; }
+            MatchResult::Lose => { return MatchResult::Win; }
             MatchResult::Tie => { return MatchResult::Tie; }
         }
     }
 
     let mut cnt = 0u8;
-    //let mut current = 64u8;
-    let mut status = MatchResult::Lose(64);
+    let mut status = MatchResult::Lose;
 
     while poses > 0 {
         let z = poses.trailing_zeros() as u8;
@@ -74,14 +72,10 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
 
         let r = winnable(board.flip(&(cnt - 1), player), op, false);
         match r {
-            MatchResult::Lose(d) => { return MatchResult::Win(d); }
+            MatchResult::Lose => { return MatchResult::Win; }
             MatchResult::Tie => { status = MatchResult::Tie; }
-            MatchResult::Win(d) => /*{
-                if current > d {
-                    current = d;
-                    status = MatchResult::Lose(d);
-                }
-            }*/(),
+            MatchResult::Win =>
+                (),
         }
     }
 
@@ -106,15 +100,12 @@ pub fn get_winnable(board: board::Board, player: color::Color) -> pmove::Move {
         println!("* {}...", pos.to_string());
         let b = board.flip(pos, player);
         match winnable(b, player.opposite(), false) {
-            MatchResult::Lose(_) => {
+            MatchResult::Lose => {
                 ret = *pos;
                 println!("WIN!");
                 return pmove::Move::Mv(*pos);
             }
-            MatchResult::Win(d) => {
-                if current > d {
-                    ret = *pos;
-                }
+            MatchResult::Win => {
             }
             MatchResult::Tie => {
                 ret = *pos;
