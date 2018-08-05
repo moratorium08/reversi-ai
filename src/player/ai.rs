@@ -15,7 +15,7 @@ pub struct AI<T: evaluator::Evaluator> {
 const LAST_SHOT: u32 = 14;
 const LAST_SHOT_SIZE: u32 = 64 - LAST_SHOT;
 
-const ALPHA_BETA_DEPTH: u32 = 0;
+const ALPHA_BETA_DEPTH: u32 = 6;
 
 
 impl <T: evaluator::Evaluator> AI<T> {
@@ -46,7 +46,7 @@ impl <T: evaluator::Evaluator> AI<T> {
             pmove::Move::Pass
         } else {
             let mut ret = poses[0];
-            let mut current = 0i64;
+            let mut current = i64::min_value();
             for pos in poses.iter() {
                 let b = board.flip(pos, player);
                 let v = -self.alphabeta(b,
@@ -60,6 +60,7 @@ impl <T: evaluator::Evaluator> AI<T> {
                     ret = *pos;
                 }
             }
+            println!("{}", current);
             pmove::Move::Mv(ret)
         }
     }
