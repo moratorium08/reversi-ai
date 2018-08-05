@@ -17,20 +17,20 @@ impl board::BitIndexable for u8 {
 }
 
 #[inline(always)]
-fn judge(player: color::Color, black: u32, white: u32) -> MatchResult {
+fn judge(player: color::Color, black: u8, white: u8) -> MatchResult {
     if black > white {
         let diff = black - white;
         if player.is_black() {
-            MatchResult::Win(diff as u8)
+            MatchResult::Win(diff)
         } else {
-            MatchResult::Lose(diff as u8)
+            MatchResult::Lose(diff)
         }
     } else if white > black {
         let diff = white - black;
         if player.is_white() {
-            MatchResult::Win(diff as u8)
+            MatchResult::Win(diff)
         } else {
-            MatchResult::Lose(diff as u8)
+            MatchResult::Lose(diff)
         }
     } else {
         MatchResult::Tie
@@ -59,7 +59,7 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
     }
 
     let mut cnt = 0u8;
-    let mut current = 64u8;
+    //let mut current = 64u8;
     let mut status = MatchResult::Lose(64);
 
     while poses > 0 {
@@ -76,12 +76,12 @@ pub fn winnable(board: board::Board, player: color::Color, pass: bool) -> MatchR
         match r {
             MatchResult::Lose(d) => { return MatchResult::Win(d); }
             MatchResult::Tie => { status = MatchResult::Tie; }
-            MatchResult::Win(d) => {
-                /*if current > d {
+            MatchResult::Win(d) => /*{
+                if current > d {
                     current = d;
                     status = MatchResult::Lose(d);
-                }*/
-            }
+                }
+            }*/(),
         }
     }
 

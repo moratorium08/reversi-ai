@@ -216,8 +216,8 @@ impl Board {
     }
 
     #[inline(always)]
-    pub fn result(&self) -> (u32, u32){
-        (self.black.count_ones(), self.white.count_ones())
+    pub fn result(&self) -> (u8, u8){
+        (self.black.count_ones() as u8, self.white.count_ones() as u8)
     }
 
     pub fn flip(&self, p: &BitIndexable, player: Color) -> Board {
