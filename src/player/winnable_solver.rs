@@ -100,7 +100,10 @@ pub fn get_winnable(board: board::Board, player: color::Color) -> pmove::Move {
     let mut ret: board::Pos = poses[0];
     let mut current = 64;
 
+    let l = poses.len();
+    println!("Size: {}", l);
     for pos in poses.iter() {
+        println!("* {}...", pos.to_string());
         let b = board.flip(pos, player);
         match winnable(b, player.opposite(), false) {
             MatchResult::Lose(_) => {
