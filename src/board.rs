@@ -35,6 +35,14 @@ pub struct Board {
     black: u64,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum Rotate {
+    Rotate0cw,
+    Rotate90cw,
+    Rotate180cw,
+    Rotate270cw,
+}
+
 impl Pos {
     pub fn from_str(s: String) -> Result<Pos, String> {
         let cs: Vec<char> = s.chars().collect();
@@ -63,11 +71,11 @@ impl Pos {
     }
 
     pub fn from_index(index: u8) -> Pos {
-        Pos{x: index / 8, y: index % 8 }
+        Pos { x: index / 8, y: index % 8 }
     }
 
     pub fn from_point(x: u8, y: u8) -> Pos {
-        Pos{x, y}
+        Pos { x, y }
     }
 }
 
@@ -204,7 +212,6 @@ impl Board {
             }
         }
         print!("\n");
-
     }
 
     pub fn print_player_board(&self, p: Color) {
@@ -216,7 +223,7 @@ impl Board {
     }
 
     #[inline(always)]
-    pub fn result(&self) -> (u8, u8){
+    pub fn result(&self) -> (u8, u8) {
         (self.black.count_ones() as u8, self.white.count_ones() as u8)
     }
 
@@ -385,5 +392,70 @@ impl Board {
         let pos = pos.to_index();
 
         self.gen_flip(pos, pl, op) != 0
+    }
+
+    // https://ameblo.jp/n-amane-n/entry-12305741801.html
+    // ちょっと怠惰すぎるが時間ないので
+    pub fn rotate(&self, rotate: Rotate) -> Board {
+        let mut b = *self;
+        match rotate {
+            Rotate::Rotate0cw => { return *self; }
+            Rotate::Rotate90cw => {}
+            Rotate::Rotate180cw => { b = self.rotate(Rotate::Rotate90cw); }
+            Rotate::Rotate270cw => { b = self.rotate(Rotate::Rotate180cw); }
+        }
+
+        let mut tmp = b.white;
+        let mut white = 0x00000000F0F0F0F0u64 & (tmp << 4);
+        white |= 0xF0F0F0F00F0F0F0Fu64 & (tmp << 32);
+        white |= 0xF0F0F0F00F0F0F0Fu64 & (tmp >> 32);
+        white |= 0x0F0F0F0F00000000u64 & (tmp >> 4);
+
+        let tmp = white;
+        white = 0x0000CCCC0000CCCC & (tmp << 2);
+        white |= 0xCCCC0000CCCC0000 & (tmp << 16);
+        white |= 0x0000333300003333 & (tmp >> 16);
+        white |= 0x3333000033330000 & (tmp >> 2);
+
+        let tmp = white;
+        white = 0x00AA00AA00AA00AA & (tmp << 1);
+        white |= 0xAA00AA00AA00AA00 & (tmp << 8);
+        white |= 0x0055005500550055 & (tmp >> 8);
+        white |= 0x5500550055005500 & (tmp >> 1);
+
+        let mut tmp = b.black;
+        let mut black = 0x00000000F0F0F0F0u64 & (tmp << 4);
+        black |= 0xF0F0F0F00F0F0F0Fu64 & (tmp << 32);
+        black |= 0xF0F0F0F00F0F0F0Fu64 & (tmp >> 32);
+        black |= 0x0F0F0F0F00000000u64 & (tmp >> 4);
+
+        let tmp = black;
+        black = 0x0000CCCC0000CCCC & (tmp << 2);
+        black |= 0xCCCC0000CCCC0000 & (tmp << 16);
+        black |= 0x0000333300003333 & (tmp >> 16);
+        black |= 0x3333000033330000 & (tmp >> 2);
+
+        let tmp = black;
+        black = 0x00AA00AA00AA00AA & (tmp << 1);
+        black |= 0xAA00AA00AA00AA00 & (tmp << 8);
+        black |= 0x0055005500550055 & (tmp >> 8);
+        black |= 0x5500550055005500 & (tmp >> 1);
+
+        Board{white, black}
+    }
+
+    fn encode_pos(&self, bit: u8) -> u8 {
+        ((self.black >> bit) & 1 + ((self.white >> bit) & 1) * 2) as u8
+    }
+
+    pub fn diag4(&self, rotate: Rotate) -> u16 {
+        let board = self.rotate(rotate);
+
+        const ps: [u8; 4] = [3, 11, 18, 25];
+        let mut ret = 0u16;
+        for p in ps.iter() {
+            ret += board.encode_pos(*p) as u16;
+        }
+        ret
     }
 }

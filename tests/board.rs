@@ -1,6 +1,6 @@
 extern crate client;
 
-use client::board::{Board, Hash, Pos, Flippable};
+use client::board::{Board, Hash, Pos, Flippable, Rotate};
 use client::color::Color;
 
 #[test]
@@ -47,6 +47,19 @@ fn board_flip_test() {
             panic!("Failed to put : {}", s);
         }
     }
+}
+
+#[test]
+fn board_rotate_test() {
+    let hash = Hash::from_values(0x0106041000040000, 0x0000020e1c080000);
+    let board = Board::from_hash(hash);
+    assert_eq!(board.rotate(Rotate::Rotate0cw), board);
+    let tmp = board.rotate(Rotate::Rotate90cw);
+    let tmp = tmp.rotate(Rotate::Rotate90cw);
+    assert_eq!(board.rotate(Rotate::Rotate180cw), tmp);
+    let tmp = tmp.rotate(Rotate::Rotate90cw);
+    let tmp = tmp.rotate(Rotate::Rotate90cw);
+    assert_eq!(board, tmp);
 }
 
 #[test]
