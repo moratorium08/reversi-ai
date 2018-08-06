@@ -90,10 +90,10 @@ class GGFOthelloGame:
     def _put(self, contents, player):
         vals = contents.split("/")
         move = vals[0]
-        if move == "pass":
+        if move[0].lower() == "p":
             self.hands.append("pass")
             return
-        self.hands.append(move[0] + move[1])
+        self.hands.append(move[0].upper() + move[1])
 
     def _set_thinking_time(self, contents):
         pass
@@ -124,5 +124,6 @@ if __name__ == '__main__':
     dump = "dump.csv"
     with open(dump, "w") as f:
         for game in parse_ggf(filename):
-            s = game.winner + ',' + ','.join(game.hands) + '\n'
-            f.write(s)
+            if len(game.hands) != 0:
+                s = game.winner + ',' + ','.join(game.hands) + '\n'
+                f.write(s)

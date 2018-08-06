@@ -4,5 +4,14 @@ version = "0.1.0"
 authors = ["katsurahiroyuki"]
 
 [dependencies]
-nom = "^4.0.0"
-rand = "^0.5.4"
+nom = "4.0.0"
+rand = "0.5.4"
+colored = "1.6"
+
+[[bin]]
+name = "main"
+path = "src/main.rs"
+
+[[bin]]
+name = "analysis"
+path = "src/analysis.rs"

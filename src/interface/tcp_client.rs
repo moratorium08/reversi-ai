@@ -55,7 +55,10 @@ impl client::Client for Client {
         let mut ret: Result<client::Command, String>;
         loop {
             let mut s = String::new();
-            self.reader.read_line(&mut s);
+            match self.reader.read_line(&mut s) {
+                Ok(_) => (),
+                Err(_) => {return Err("Failed to readline".to_string());},
+            }
             if s.len() == 0 {
                 continue;
             }

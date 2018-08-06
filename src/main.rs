@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate nom;
+extern crate colored;
 extern crate rand;
 
 pub mod board;

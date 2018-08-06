@@ -1,5 +1,4 @@
 use board;
-use color;
 use std::vec::Vec;
 
 
@@ -16,9 +15,10 @@ pub enum Pos {
 }
 
 pub struct History {
-    result: MatchResult,
-    poses: Vec<Pos>,
+    pub result: MatchResult,
+    pub poses: Vec<Pos>,
 }
+
 
 named!(black<&str, MatchResult>,
     do_parse!(
@@ -72,6 +72,7 @@ named!(mv<&str, Pos>,
     )
 );
 
+
 named!(pass<&str, Pos>,
     do_parse!(
         tag!("pass") >>
@@ -79,9 +80,13 @@ named!(pass<&str, Pos>,
     )
 );
 
+named!(pos<&str, Pos>,
+    alt!(mv|pass)
+);
+
 named!(pos_comma<&str, Pos>,
     do_parse!(
-        p: alt!(mv|pass) >>
+        p: pos >>
         comma >>
         (p)
     )
@@ -95,7 +100,7 @@ fn add_vec(mut v: Vec<Pos>, p: Pos) -> Vec<Pos> {
 named!(history<&str, Vec<Pos>>,
     do_parse!(
         poses: many0!(pos_comma) >>
-        p: mv >>
+        p: pos >>
         (add_vec(poses, p))
     )
 );
@@ -103,7 +108,7 @@ named!(history<&str, Vec<Pos>>,
 
 named!(comma<&str, ()>, do_parse!(tag!(",") >> ()));
 
-named!(parse<&str, History>,
+named!(pub parse<&str, History>,
     do_parse!(
         w: winner >>
         comma >>
@@ -113,37 +118,43 @@ named!(parse<&str, History>,
     )
 );
 
-#[test]
-fn test_parse_csv_line() {
-    let s = "W,pass,H4,pass,B7,B8,A8\n";
-    let his = parse(s);
-    match his {
-        Ok(("", his)) => {
-            assert_eq!(his.poses.len(), 6);
-            assert_eq!(his.result, MatchResult::White);
-        }
-        _ => panic!("Failed to parse")
-    }
-
-    let long = "W,D3,C5,D6,E3,F4,C6,F5,C3,C4,B5,B4,F3,A5,B6,E6,A6,A7,A3,C7,D7,C8,G4,H3,F7,E7,G6,G3,G5,H5,F8,E8,F6,F2,D2,E2,C2,D1,B3,C1,A4,A2,G2,F1,H1,G1,E1,B2,A1,B1,H2,G8,D8,G7,H8,H7,H6,pass,H4,pass,B7,B8,A8";
-    let his = parse(s);
-    let mut board = board::Board::new();
-    let mut player = color::Color::black();
-    match his {
-        Ok(("", his)) => {
-            for pos in his.poses.iter() {
-                match pos {
-                    Pos::Pass => (),
-                    Pos::Mv(p) => {
-                        board = board.flip(p, player);
-                    }
-                }
-                player = player.opposite();
+#[cfg(test)]
+mod tests {
+    use color;
+    use board;
+    use super::*;
+    #[test]
+    fn test_parse_csv_line() {
+        let s = "W,pass,H4,B7,B8,A8,pass\n";
+        let his = parse(s);
+        match his {
+            Ok(("", his)) => {
+                assert_eq!(his.poses.len(), 6);
+                assert_eq!(his.result, MatchResult::White);
             }
-
-            let (black, white) = board.result();
-            assert!(black < white);
+            _ => panic!("Failed to parse")
         }
-        _ => panic!("Failed to parse")
+
+        let long = "W,D3,C5,D6,E3,F4,C6,F5,C3,C4,B5,B4,F3,A5,B6,E6,A6,A7,A3,C7,D7,C8,G4,H3,F7,E7,G6,G3,G5,H5,F8,E8,F6,F2,D2,E2,C2,D1,B3,C1,A4,A2,G2,F1,H1,G1,E1,B2,A1,B1,H2,G8,D8,G7,H8,H7,H6,pass,H4,pass,B7,B8,A8\n";
+        let his = parse(long);
+        let mut board = board::Board::new();
+        let mut player = color::Color::black();
+        match his {
+            Ok(("", his)) => {
+                for pos in his.poses.iter() {
+                    match pos {
+                        Pos::Pass => (),
+                        Pos::Mv(p) => {
+                            board = board.flip(p, player);
+                        }
+                    }
+                    player = player.opposite();
+                }
+
+                let (black, white) = board.result();
+                assert!(black < white);
+            }
+            _ => panic!("Failed to parse")
+        }
     }
 }

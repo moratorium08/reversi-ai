@@ -1,7 +1,6 @@
 use board;
 use color;
 use pmove;
-use player::player::Player;
 
 pub enum MatchResult {
     Win,
@@ -25,7 +24,6 @@ fn judge(player: color::Color, black: u8, white: u8) -> MatchResult {
             MatchResult::Lose
         }
     } else if white > black {
-        let diff = white - black;
         if player.is_white() {
             MatchResult::Win
         } else {
@@ -92,7 +90,6 @@ pub fn get_winnable(board: board::Board, player: color::Color) -> pmove::Move {
     }
 
     let mut ret: board::Pos = poses[0];
-    let mut current = 64;
 
     let l = poses.len();
     println!("Size: {}", l);
@@ -101,7 +98,6 @@ pub fn get_winnable(board: board::Board, player: color::Color) -> pmove::Move {
         let b = board.flip(pos, player);
         match winnable(b, player.opposite(), false) {
             MatchResult::Lose => {
-                ret = *pos;
                 println!("WIN!");
                 return pmove::Move::Mv(*pos);
             }
@@ -109,7 +105,6 @@ pub fn get_winnable(board: board::Board, player: color::Color) -> pmove::Move {
             }
             MatchResult::Tie => {
                 ret = *pos;
-                current = 0;
             }
         }
     }

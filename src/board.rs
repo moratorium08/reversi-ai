@@ -112,7 +112,6 @@ impl Hash {
 impl fmt::Display for Hash {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let Hash(data) = *self;
-        let mut ret: fmt::Result;
         for (i, x) in data.iter().enumerate() {
             match if i == 7 { write!(f, "{:02x}, ", x) } else { write!(f, "{:02x}", x) } {
                 Ok(_) => (),
@@ -405,7 +404,7 @@ impl Board {
             Rotate::Rotate270cw => { b = self.rotate(Rotate::Rotate180cw); }
         }
 
-        let mut tmp = b.white;
+        let tmp = b.white;
         let mut white = 0x00000000F0F0F0F0u64 & (tmp << 4);
         white |= 0xF0F0F0F00F0F0F0Fu64 & (tmp << 32);
         white |= 0xF0F0F0F00F0F0F0Fu64 & (tmp >> 32);
@@ -423,7 +422,7 @@ impl Board {
         white |= 0x0055005500550055 & (tmp >> 8);
         white |= 0x5500550055005500 & (tmp >> 1);
 
-        let mut tmp = b.black;
+        let tmp = b.black;
         let mut black = 0x00000000F0F0F0F0u64 & (tmp << 4);
         black |= 0xF0F0F0F00F0F0F0Fu64 & (tmp << 32);
         black |= 0xF0F0F0F00F0F0F0Fu64 & (tmp >> 32);
@@ -448,13 +447,14 @@ impl Board {
         ((self.black >> bit) & 1 + ((self.white >> bit) & 1) * 2) as u8
     }
 
-    pub fn diag4(&self, rotate: Rotate) -> u16 {
+    pub fn diag4(&self, rotate: Rotate) -> usize {
         let board = self.rotate(rotate);
 
-        const ps: [u8; 4] = [3, 11, 18, 25];
-        let mut ret = 0u16;
-        for p in ps.iter() {
-            ret += board.encode_pos(*p) as u16;
+        const PS: [u8; 4] = [3, 10, 17, 24];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
         }
         ret
     }
