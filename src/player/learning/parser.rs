@@ -2,7 +2,7 @@ use board;
 use std::vec::Vec;
 
 
-#[derive(PartialEq, Eq, Debug)]
+#[derive(PartialEq, Eq, Debug, Clone, Copy)]
 pub enum MatchResult {
     Black,
     White,

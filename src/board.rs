@@ -1,5 +1,6 @@
 use std::fmt;
 use std::vec;
+use std::iter::Iterator;
 
 
 use color::Color;
@@ -119,6 +120,22 @@ impl fmt::Display for Hash {
             }
         }
         Ok(())
+    }
+}
+
+macro_rules! gen_pattern_func{
+    ($name:ident, $size:expr, $vec:expr) => {
+        pub fn $name(&self, rotate: Rotate) -> usize {
+            let board = self.rotate(rotate);
+
+            const PS: [u8; $size] = $vec;
+            let mut ret = 0usize;
+            for p in PS.iter() {
+                ret *= 3;
+                ret += board.encode_pos(*p) as usize;
+            }
+            ret
+        }
     }
 }
 
@@ -447,10 +464,100 @@ impl Board {
         ((self.black >> bit) & 1 + ((self.white >> bit) & 1) * 2) as u8
     }
 
-    pub fn diag4(&self, rotate: Rotate) -> usize {
+    // TODO: マクロ化
+    gen_pattern_func!(diag4, 4, [3, 10, 17, 24]);
+    gen_pattern_func!(diag5, 5, [4, 11, 18, 25, 32]);
+    gen_pattern_func!(diag6, 6, [5, 12, 19, 26, 33, 40]);
+    gen_pattern_func!(diag7, 7, [6, 13, 20, 27, 34, 41, 48]);
+
+    pub fn diag7(&self, rotate: Rotate) -> usize {
         let board = self.rotate(rotate);
 
-        const PS: [u8; 4] = [3, 10, 17, 24];
+        const PS: [u8; 7] = [6, 13, 20, 27, 34, 41, 48];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn diag8(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 8] = [7, 14, 21, 28, 35, 42, 49, 56];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn hor_vert2(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 8] = [8, 9, 10, 11, 12, 13, 14, 15];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn hor_vert3(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 8] = [16, 17, 18, 19, 20, 21, 22, 23];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn hor_vert4(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 8] = [24, 25, 26, 27, 28, 29, 30, 31];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn edge2x(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 10] = [0, 1, 2, 3, 4, 5, 6, 7, 9, 14];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn corner2x5(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 10] = [0, 1, 2, 3, 4, 8, 9, 10, 11, 12];
+        let mut ret = 0usize;
+        for p in PS.iter() {
+            ret *= 3;
+            ret += board.encode_pos(*p) as usize;
+        }
+        ret
+    }
+
+    pub fn corner3x3(&self, rotate: Rotate) -> usize {
+        let board = self.rotate(rotate);
+
+        const PS: [u8; 9] = [0, 1, 2, 8, 9, 10, 16, 17, 18];
         let mut ret = 0usize;
         for p in PS.iter() {
             ret *= 3;
