@@ -9,10 +9,10 @@ pub struct AI<T: evaluator::Evaluator> {
     evaluator: T
 }
 
-const LAST_SHOT: u8 = 14;
+const LAST_SHOT: u8 = 16;
 const LAST_SHOT_SIZE: u8 = 64 - LAST_SHOT;
 
-const ALPHA_BETA_DEPTH: u32 = 5;
+const ALPHA_BETA_DEPTH: u32 = 7;
 
 
 impl <T: evaluator::Evaluator> AI<T> {

@@ -17,9 +17,9 @@ use player::ai;
 use player::linear_evaluator;
 
 
-const HOST: &str = "127.0.0.1";
+const HOST: &str = "localhost";
 const PORT: u16 = 3000;
-const NAME: &str = "猫";
+const NAME: &str = "mike";
 
 fn main() {
 

@@ -21,9 +21,9 @@ const output_dir: &str = "output/";
 
 
 fn main() {
-    println!("Start analyzing...\n");
+    eprintln!("Start analyzing...\n");
     match gen_statistical_analysis(filename, output_dir) {
-        Ok(_) => {println!("\n{}", "Finished successfully.".green());},
+        Ok(_) => {eprintln!("\n{}", "Finished successfully.".green());},
         Err(s) => {eprintln!("Failed: {}", s);}
     }
 }

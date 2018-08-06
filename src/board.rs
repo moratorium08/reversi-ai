@@ -475,4 +475,5 @@ impl Board {
     gen_pattern_func!(edge2x, 10, [0, 1, 2, 3, 4, 5, 6, 7, 9, 14]);
     gen_pattern_func!(corner2x5, 10, [0, 1, 2, 3, 4, 8, 9, 10, 11, 12]);
     gen_pattern_func!(corner3x3, 9, [0, 1, 2, 8, 9, 10, 16, 17, 18]);
+    gen_pattern_func!(corner2x2, 4, [0, 1, 8, 9]);
 }
