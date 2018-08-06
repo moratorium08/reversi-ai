@@ -90,7 +90,7 @@ impl <T: evaluator::Evaluator> AI<T> {
                 }
             }
 
-            return -self.alphabeta(board, op, true, alpha, beta, depth - 1);
+            return -self.alphabeta(board, op, true, -beta, -alpha, depth - 1);
         }
 
         let mut cnt = 0u8;
