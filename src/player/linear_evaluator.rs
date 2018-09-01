@@ -13,7 +13,7 @@ impl Linear {
     }
 }
 
-const map: [[i64; 8]; 8] = [
+const map1: [[i64; 8]; 8] = [
     [1000, -40, 5, 5, 5, 5, -40, 1000],
     [-40, -40, 1, 1, 1, 1, -40, -40],
     [5, 1, 1, 1, 1, 1, 1, 5],
@@ -27,38 +27,33 @@ const map: [[i64; 8]; 8] = [
 
 impl Evaluator for Linear {
     fn evaluate(&self, board: board::Board) -> i64 {
+        let features = calculate_features(board);
+        let coef = [0.87322733, -0.24674064, 0.45119731, -0.55724615, 0.33250983, -0.2325938,
+        0.36340727,  0.26275155,  -1.51238341, -1.14778382, -0.40514061,  0.04111813];
         let mut ret = 0i64;
-        for x in 0usize..8 {
-            for y in 0usize..8 {
-                let pos = board::Pos::from_point(x as u8, y as u8);
-                match board.color(pos) {
-                    Some(color) => {
-                        if color.is_black() {
-                            ret += map[x][y];
-                        } else {
-                            ret -= map[x][y];
-                        }
-                    }
-                    None => (),
-                }
-            }
+        for i in 0..12 {
+            ret += (features[i] * coef[i] as f32 * 100f32) as i64;
         }
-        let board::Flippable(b) = board.flippable(color::Color::black());
-        let board::Flippable(c) = board.flippable(color::Color::white());
+        ret
+    }
+}
 
-        let point = b.count_ones() as i64 - c.count_ones() as i64;
-
-        ret + point * 10
+fn calc(x: u16) -> f32 {
+    let x = (x as f32) / ((u16::max_value() - 1) as f32) - 0.5f32;
+    if (x < 0f32 && -x < 0.1) || (x > 0f32 && x < 0.1) {
+        0.0f32
+    } else {
+        x
     }
 }
 
 macro_rules! gen_feature {
     ($name:ident, $array:ident) => {
         pub fn $name(board: board::Board) -> f32 {
-            ((param::$array[board.$name(board::Rotate::Rotate0cw)] as f32) / ((u16::max_value() - 1) as f32) - 0.5f32) +
-            ((param::$array[board.$name(board::Rotate::Rotate90cw)] as f32) / ((u16::max_value() - 1) as f32) - 0.5f32) +
-            ((param::$array[board.$name(board::Rotate::Rotate180cw)] as f32) / ((u16::max_value() - 1) as f32) - 0.5f32) +
-            ((param::$array[board.$name(board::Rotate::Rotate270cw)] as f32) / ((u16::max_value() - 1) as f32) - 0.5f32)
+            calc(param::$array[board.$name(board::Rotate::Rotate0cw)]) +
+            calc(param::$array[board.$name(board::Rotate::Rotate90cw)]) +
+            calc(param::$array[board.$name(board::Rotate::Rotate180cw)]) +
+            calc(param::$array[board.$name(board::Rotate::Rotate270cw)])
         }
     }
 }
@@ -89,6 +84,17 @@ pub const feature_functions: [fn(board::Board) -> f32; 12] = [
             diag4, diag5, diag6, diag7, diag8, hor_vert2, hor_vert3, hor_vert4,
             edge2x, corner2x2, corner3x3, flippable_diff
         ];
+pub const feature_names: [&str; 12] = [
+        "diag4", "diag5", "diag6", "diag7", "diag8", "hor_vert2", "hor_vert3", "hor_vert4",
+        "edge2x", "corner2x2", "corner3x3", "flippable_diff"
+];
+
+pub fn print_features(board: board::Board) {
+    let features = calculate_features(board);
+    for i in 0..12 {
+        println!("{}: {}", feature_names[i], features[i]);
+    }
+}
 
 pub fn calculate_features(board: board::Board) -> Vec<f32> {
     let mut v = Vec::<f32>::new();

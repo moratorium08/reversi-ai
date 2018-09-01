@@ -3,16 +3,17 @@ use color;
 use pmove;
 use player::player::Player;
 use player::evaluator;
+use player::linear_evaluator;
 use super::winnable_solver::get_winnable;
 
 pub struct AI<T: evaluator::Evaluator> {
     evaluator: T
 }
 
-const LAST_SHOT: u8 = 16;
+const LAST_SHOT: u8 = 17;
 const LAST_SHOT_SIZE: u8 = 64 - LAST_SHOT;
 
-const ALPHA_BETA_DEPTH: u32 = 7;
+const ALPHA_BETA_DEPTH: u32 = 6;
 
 
 impl <T: evaluator::Evaluator> AI<T> {
@@ -58,6 +59,8 @@ impl <T: evaluator::Evaluator> AI<T> {
                 }
             }
             println!("{}", current);
+            linear_evaluator::print_features(board.flip(&ret, player));
+
             pmove::Move::Mv(ret)
         }
     }

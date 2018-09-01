@@ -9,6 +9,7 @@ pub enum MatchResult {
     Draw,
 }
 
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Pos {
     Pass,
     Mv(board::Pos),
